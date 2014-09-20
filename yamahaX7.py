@@ -17,6 +17,7 @@ class TX7(MidiDevice):
 		self.output_id = output_id
 		MidiDevice.__init__(self,input_id,output_id)
 
+		#Create operator instances for saving
 		for i in range(6):
 			self.operators.append(TX7Operator())
 
@@ -55,6 +56,12 @@ class TX7(MidiDevice):
 					for i in msg[145:msg_len]:
 						self.current_patch_name += chr(i)
 					print(self.current_patch_name)
+					#Transfer data to objects
+					for op in range(6):
+						self.operators[op].setParam(msg[(op*21):((op*21)+21)])
+						print("Operator %d parameters" % (6-op))
+						print(self.operators[op].getParam())
+
 				elif msg_len == 4096:
 					print("Received all patches \n No current action")
 
@@ -79,7 +86,7 @@ class TX7(MidiDevice):
 			return 0
 
 class TX7Operator(object):
-
+	#Object for storing operator data for TX7/DX7
 	on = False
 	eg_rate = [0,0,0,0]
 	eg_lvl = [0,0,0,0]
@@ -94,7 +101,7 @@ class TX7Operator(object):
 	allParam = []
 
 	def __init__(self):
-		self.on=1
+		self.on= True
 
 	def set_on(self,msg):
 		if isinstance(msg,bool):
@@ -111,10 +118,10 @@ class TX7Operator(object):
 				self.key_vel_sens = data[15]
 				self.output_lvl = data[16]
 				self.osc_mode = data[17]
-				self.freq_array = data[18,21]
+				self.freq_array = data[18:21]
 
 	def getParam(self):
-		allParam = []
+		self.allParam = []
 		for i in self.eg_rate:
 			self.allParam.append(i)
 		for i in self.eg_lvl:
