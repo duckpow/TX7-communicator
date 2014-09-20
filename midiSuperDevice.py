@@ -1,8 +1,8 @@
-# handler class for TX7
+#Midi device object super class
 
 import pygame.midi as Midi
 
-class TX7(object):
+class MidiDevice(object):
 	"""Handler class for connections to TX7 or DX7"""
 	temp_data = []
 	receiving_sysEx = False
@@ -64,5 +64,3 @@ class TX7(object):
 					return 0
 			else:
 				return self.temp_data
-
-
