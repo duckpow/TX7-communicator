@@ -23,6 +23,7 @@ class MidiDevice(object):
 			msg = msg[0]
 		if msg == int('11110000',2):
 			print("receiving SysEx")
+			self.sysExMsg[:] = []
 			return True
 		else:
 			return False
@@ -43,14 +44,30 @@ class MidiDevice(object):
 			self.sysExMsg.append(entry)
 			if self.sysExEOX(entry):
 				print(self.sysExMsg) #Print message
-				#self.parseSysEx(sysExMsg)
-				self.sysExMsg[:] = [] #Del message here! Bloody scope!!!
 				return False
 		return True
 
+	#Check if there is data
 	def poll(self):
 		return self.inStream.poll()
 
+	def write(self, data):
+		self.outStream.write(data)
+
+	def write_SysEx(self, data):
+		if data[0] == int('11110000',2):
+			outgoing_msg = []
+			while len(data) > 4:
+				outgoing_msg.append([data[0:4],0])
+				for i in range(4):
+					data.pop(0)
+			outgoing_msg.append([data,0])
+			self.write(outgoing_msg)
+		else:
+			print("Not a valid SysEx message")
+
+
+	#Read with a handling of SysEx messages
 	def read(self):
 		self.temp_data = self.inStream.read(1)
 		if self.receiving_sysEx:
