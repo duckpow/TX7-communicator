@@ -51,6 +51,7 @@ class MidiDevice(object):
 	def write(self, data):
 		self.outStream.write(data)
 
+	#Due to pygame.midi 's strange way of hanling midi we format our sysEx message list in blocks of 4 plus 0 time codes
 	def write_SysEx(self, data):
 		if data[0] == int('11110000',2): #Check if a valid sysEx message
 			outgoing_msg = []
