@@ -4,6 +4,10 @@ import pygame.midi as Midi
 
 class MidiDevice(object):
 	"""Super class for both ways connections to Midi devices"""
+	SYSEX_START_ID = 0b11110000
+	SYSEX_EOX_ID = 0b11110111
+	YAMAHA_ID = 67
+
 	temp_data = []
 	receiving_sysEx = False
 	sysExMsg = []
@@ -21,7 +25,7 @@ class MidiDevice(object):
 		#get the first part of the list, no matter how nested
 		while isinstance(msg,list):
 			msg = msg[0]
-		if msg == int('11110000',2):
+		if msg == self.SYSEX_START_ID:
 			return True
 		else:
 			return False
@@ -31,7 +35,7 @@ class MidiDevice(object):
 		#get the first part of the list, no matter how nested
 		while isinstance(msg,list):
 			msg = msg[0]
-		if msg == int('11110111',2):
+		if msg == self.SYSEX_EOX_ID:
 			return True
 		else:
 			return False
@@ -53,7 +57,7 @@ class MidiDevice(object):
 
 	#Due to pygame.midi 's strange way of hanling midi we format our sysEx message list in blocks of 4 plus 0 time codes
 	def write_SysEx(self, data):
-		if data[0] == int('11110000',2): #Check if a valid sysEx message
+		if self.sysExCheck(data[0]): #Check if a valid sysEx message
 			outgoing_msg = []
 			while len(data) > 4:
 				outgoing_msg.append([data[0:4],0])

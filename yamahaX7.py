@@ -7,8 +7,7 @@ from midiSuperDevice import MidiDevice
 class TX7(MidiDevice):
 	"""Handler class for connections to TX7 or DX7"""
 
-	#This message requests patch data from TX7 (should work on DX7 as well)
-	get_patch_message = [240, 67, 32, 0, 247]
+	get_patch_message = []
 
 	current_patch_name = ""
 
@@ -17,6 +16,8 @@ class TX7(MidiDevice):
 		self.output_id = output_id
 		MidiDevice.__init__(self,input_id,output_id)
 		#Get current patch on start up
+		#This message requests patch data from TX7 (should work on DX7 as well)
+		self.get_patch_message = [self.SYSEX_START_ID, self.YAMAHA_ID, 32, 0, self.SYSEX_EOX_ID]
 		self.get_patch()
 
 	def get_patch(self):
@@ -39,16 +40,19 @@ class TX7(MidiDevice):
 				msg.pop(0)
 				msg.pop(0)
 				msg_len = self.sysEx_MSLS_byte(msg[0],msg[1])
+				msg.pop(0)
+				msg.pop(0)
+				print("Length of message: " + str(msg_len))
+				if msg_len == 155:
+					print("Single patch received")
+					print("Name of patch: ")
+					current_patch_name = ""
+					for i in msg[145:msg_len]:
+						self.current_patch_name += chr(i)
+					print(self.current_patch_name)
+				elif msg_len == 4096:
+					print("Received all patches \n No current action")
 
-				print(msg_len)
-
-				print("Name of patch: ")
-
-				current_patch_name = ""
-				for i in msg[147:157]:
-					self.current_patch_name += chr(i)
-
-				print(self.current_patch_name)
 				print(msg)
 			else:
 				print("Not recognized")
