@@ -7,9 +7,16 @@ from midiSuperDevice import MidiDevice
 class TX7(MidiDevice):
 	"""Handler class for connections to TX7 or DX7"""
 
-	operators = []
+	
 	get_patch_message = []
 
+	operators = []
+	pitch_eg_rate = [0,0,0,0]
+	pitch_eg_lvl = [0,0,0,0]
+	algorithm = 0
+	feedback = 0
+	osc_sync = 0
+	LFO = [0,0,0,0,0,0]
 	current_patch_name = ""
 
 	def __init__(self, input_id, output_id):
@@ -36,6 +43,11 @@ class TX7(MidiDevice):
 		b2 = byte2 & 0b01111111
 		return (b1 << 7) | (b2)
 
+	#Should be used to read bits of which operators were on off
+	def testBit(self,int_type,offset):
+		mask = 1 << offset
+		return int_type & mask
+
 	def sysEx_parser(self, msg):
 		print("SysEx received")
 		msg_len = 0
@@ -43,23 +55,25 @@ class TX7(MidiDevice):
 		if(msg[0] == 67): #Test if a Yamaha device
 			msg.pop(0) #remove manufactor byte
 			if msg[0] == 0  and msg[1] == 0: #check substate, chan # and format
-				msg.pop(0)
-				msg.pop(0)
+				msg.pop(0) #remove substate and chan #
+				msg.pop(0) #remove format
 				msg_len = self.sysEx_MSLS_byte(msg[0],msg[1])
-				msg.pop(0)
-				msg.pop(0)
+				msg.pop(0) #remove MS byte
+				msg.pop(0) #remove LS byte
 				print("Length of message: " + str(msg_len))
 				if msg_len == 155:
 					print("Single patch received")
 					print("Name of patch: ")
-					current_patch_name = ""
+					self.current_patch_name = ""
 					for i in msg[145:msg_len]:
 						self.current_patch_name += chr(i)
 					print(self.current_patch_name)
 					#Transfer data to objects
 					for op in range(6):
 						self.operators[op].setParam(msg[(op*21):((op*21)+21)])
-						print("Operator %d parameters" % (6-op))
+						#Operators stored in reverse order...
+						print("Operator %d: " % (6-op))
+						print("Parameters:")
 						print(self.operators[op].getParam())
 
 				elif msg_len == 4096:
@@ -87,6 +101,7 @@ class TX7(MidiDevice):
 
 class TX7Operator(object):
 	#Object for storing operator data for TX7/DX7
+	#Only used inside TX7 class
 	on = False
 	eg_rate = [0,0,0,0]
 	eg_lvl = [0,0,0,0]
@@ -101,11 +116,7 @@ class TX7Operator(object):
 	allParam = []
 
 	def __init__(self):
-		self.on= True
-
-	def set_on(self,msg):
-		if isinstance(msg,bool):
-			self.on = msg
+		self.on= False
 
 	def setParam(self,data):
 		if isinstance(data,list):
