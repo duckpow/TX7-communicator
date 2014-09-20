@@ -25,28 +25,22 @@ class TX7(MidiDevice):
 	#The TX7 and DX7 uses 2 bytes to tell how long the messages is.
 	#The last 7 bit of each number is combined to one 14 bit number. 
 	def sysEx_MSLS_byte(self,byte1,byte2):
-		#get binart representation
-		b1 = bin(byte1)
-		b2 = bin(byte2)
-		#Lose the '0b' of each binary string
-		b1 = b1[b1.index('b')+1:len(b1)]
-		b2 = b2[b2.index('b')+1:len(b2)]
-		#Make sure the last binary string has a length of 7
-		while len(b2) < 7:
-			b2 = '0' + b2
-		#Return the 14 bit number a an int
-		return int(b1+b2,2)
+		b1 = byte1 & 0b01111111
+		b2 = byte2 & 0b01111111
+		return (b1 << 7) | (b2)
 
 	def sysEx_parser(self, msg):
 		print("SysEx received")
+		msg_len = 0
 		msg.pop(0) #remove status byte
 		if(msg[0] == 67): #Test if a Yamaha device
 			msg.pop(0) #remove manufactor byte
 			if msg[0] == 0  and msg[1] == 0: #check substate, chan # and format
 				msg.pop(0)
 				msg.pop(0)
-				print self.sysEx_MSLS_byte(msg[0],msg[1])
+				msg_len = self.sysEx_MSLS_byte(msg[0],msg[1])
 
+				print(msg_len)
 
 				print("Name of patch: ")
 
