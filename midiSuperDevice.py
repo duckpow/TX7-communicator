@@ -3,7 +3,7 @@
 import pygame.midi as Midi
 
 class MidiDevice(object):
-	"""Handler class for connections to TX7 or DX7"""
+	"""Super class for both ways connections to Midi devices"""
 	temp_data = []
 	receiving_sysEx = False
 	sysExMsg = []
