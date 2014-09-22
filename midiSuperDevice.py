@@ -21,11 +21,6 @@ class MidiDevice(object):
 	def __init__(self, **kwargs):
 		"""Expects it's first argument to be an input_id, the second (optional) an output_id, and the third (optional) the channel number"""
 		if kwargs is not None:
-			for kw in kwargs:
-				print(kw, kwargs[kw])
-
-
-
 			if 'input_id' in kwargs.keys():
 				self.input_id = kwargs['input_id']
 				# Create streams
@@ -42,28 +37,31 @@ class MidiDevice(object):
 		self.key_on_status_with_chan = (self.KEY_ON_ID << 4) | chan
 		self.key_off_status_with_chan = (self.KEY_OFF_ID << 4) | chan
 
-		# Create streams
-		#self.inStream = Midi.Input(self.input_id)
-
-		#if self.output_id != None:
-		#	self.outStream = Midi.Output(self.output_id)
-
-	# Function to check if msg is start of SysEx data
-	def sysExCheck(self, msg):
+	def firstOfNest(self, msg):
+		#while isinstance(msg,list):
 		#get the first part of the list, no matter how nested
 		while isinstance(msg,list):
 			msg = msg[0]
-		if msg == self.SYSEX_START_ID:
+		return msg
+
+	def note_check(self,msg):
+		msg = self.firstOfNest(msg)
+		#Note on and note off messages share the first 3 bits: 100.
+		if not msg & 0b01100000:
+			return True
+		else:
+			return False
+
+	# Function to check if msg is start of SysEx data
+	def sysExCheck(self, msg):
+		if self.firstOfNest(msg) == self.SYSEX_START_ID:
 			return True
 		else:
 			return False
 
 	# Function to check if msg is end of SysEx data
 	def sysExEOX(self, msg):
-		#get the first part of the list, no matter how nested
-		while isinstance(msg,list):
-			msg = msg[0]
-		if msg == self.SYSEX_EOX_ID:
+		if self.firstOfNest(msg) == self.SYSEX_EOX_ID:
 			return True
 		else:
 			return False

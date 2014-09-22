@@ -59,9 +59,10 @@ def main():
 			data = tx7.read()
 			if data != 0:
 				print(data)
-		if keyboard.poll():
-			data = keyboard.read()
-			tx7.write(data)
+		elif keyboard.poll():
+			data = keyboard.read_noteMsg()
+			if data != None:
+				tx7.write(data)
 
 if __name__ == '__main__':
     main()

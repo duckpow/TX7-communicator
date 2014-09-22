@@ -21,7 +21,7 @@ class TX7(MidiDevice):
 	def __init__(self, input_id, output_id):
 		self.input_id = input_id
 		self.output_id = output_id
-		MidiDevice.__init__(self,input_id=self.input_id,output_id=self.output_id)
+		MidiDevice.__init__(self, input_id=self.input_id, output_id=self.output_id)
 
 		#Create operator instances for saving
 		for i in range(6):
