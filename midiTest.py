@@ -22,8 +22,8 @@ def main():
 	device_count = Midi.get_count()
 	#get info on devices
 	if device_count > 0:
+		print("Midi-devices found:")
 		for device in range(device_count):
-			print("Midi-devices found:")
 			temp = Midi.get_device_info(device) #get info on midi devices
 			io = ""
 
@@ -39,8 +39,7 @@ def main():
 			print(io, "Device #", device, temp[1])
 	else:
 		print("No Midi devices found \n exiting...")
-		sys.exit(0)
-
+		sys.exit(0) #No reason to carry on so exit
 
 	#Prompt user for devices
 	input_id = raw_input("Choose midi input device #: ")
