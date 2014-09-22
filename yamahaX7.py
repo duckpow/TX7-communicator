@@ -7,7 +7,6 @@ from midiSuperDevice import MidiDevice
 class TX7(MidiDevice):
 	"""Handler class for connections to TX7 or DX7"""
 
-	
 	get_patch_message = []
 
 	operators = []

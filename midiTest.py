@@ -5,6 +5,7 @@
 
 # Need a midi lib
 import pygame.midi as Midi
+import sys
 
 from yamahaX7 import TX7
 
@@ -18,22 +19,28 @@ def main():
 	receivingSysEx = False
 	sysExMsg = []
 
+	device_count = Midi.get_count()
 	#get info on devices
-	print("Midi-devices found:")
-	for device in range(Midi.get_count()):
-		temp = Midi.get_device_info(device) #get info on midi devices
-		io = ""
+	if device_count > 0:
+		for device in range(device_count):
+			print("Midi-devices found:")
+			temp = Midi.get_device_info(device) #get info on midi devices
+			io = ""
 
-		#Check if input or output
-		if temp[2] and not temp[3]:
-			io = "Input"
-		elif temp[3] and not temp[2]:
-			io = "Output"
-		else:
-			io = "Unrecognized"
+			#Check if input or output
+			if temp[2] and not temp[3]:
+				io = "Input"
+			elif temp[3] and not temp[2]:
+				io = "Output"
+			else:
+				io = "Unrecognized"
 
-		#Print info
-		print(io, "Device #", device, temp[1])
+			#Print info
+			print(io, "Device #", device, temp[1])
+	else:
+		print("No Midi devices found \n exiting...")
+		sys.exit(0)
+
 
 	#Prompt user for devices
 	input_id = raw_input("Choose midi input device #: ")
