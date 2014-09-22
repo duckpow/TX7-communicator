@@ -9,3 +9,4 @@ class MidiController(MidiDevice):
 
 	def __init__(self, input_id):
 		self.input_id = input_id
+		MidiDevice.__init__(self,input_id=self.input_id)

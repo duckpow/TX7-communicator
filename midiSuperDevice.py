@@ -18,30 +18,35 @@ class MidiDevice(object):
 	receiving_sysEx = False
 	sysExMsg = []
 
-	def __init__(self, input_id, *args):
+	def __init__(self, **kwargs):
 		"""Expects it's first argument to be an input_id, the second (optional) an output_id, and the third (optional) the channel number"""
-		self.input_id = input_id
-		#If given an output id, assign it a variable
-		if len(args)>0:
-			self.output_id = args[0]
+		if kwargs is not None:
+			for kw in kwargs:
+				print(kw, kwargs[kw])
 
-		#If given a midi channel, use it. Else use 0 as default.
-		if len(args)>1:
-			chan = args[1]
-		else:
-			chan = 0
+
+
+			if 'input_id' in kwargs.keys():
+				self.input_id = kwargs['input_id']
+				# Create streams
+				self.inStream = Midi.Input(self.input_id)
+			#If given an output id, assign it a variable
+			if 'output_id' in kwargs.keys():
+				self.output_id = kwargs['output_id']
+				# Create streams
+				self.outStream = Midi.Output(self.output_id)
+		
+		chan = 0
 
 		#Create status messages. Should maybe not be constant for devices, but is sufficient for my needs now.
 		self.key_on_status_with_chan = (self.KEY_ON_ID << 4) | chan
 		self.key_off_status_with_chan = (self.KEY_OFF_ID << 4) | chan
 
 		# Create streams
-		self.inStream = Midi.Input(self.input_id)
+		#self.inStream = Midi.Input(self.input_id)
 
-		print(locals())
-
-		if self.output_id != None:
-			self.outStream = Midi.Output(self.output_id)
+		#if self.output_id != None:
+		#	self.outStream = Midi.Output(self.output_id)
 
 	# Function to check if msg is start of SysEx data
 	def sysExCheck(self, msg):

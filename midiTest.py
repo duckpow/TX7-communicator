@@ -8,6 +8,7 @@ import pygame.midi as Midi
 import sys
 
 from yamahaX7 import TX7
+from midiController import MidiController
 
 
 #Main program
@@ -45,8 +46,12 @@ def main():
 	input_id = raw_input("Choose midi input device #: ")
 	output_id = raw_input("Choose midi output device #: ")
 
+	controller_id = raw_input("Choose midi controller: ")
+
 	#Create handler
 	tx7 = TX7(int(input_id),int(output_id))
+
+	keyboard = MidiController(int(controller_id))
 
 	#Main loop. Currently no way to terminate!!! besides killing the process
 	while not done:
@@ -54,6 +59,9 @@ def main():
 			data = tx7.read()
 			if data != 0:
 				print(data)
+		if keyboard.poll():
+			data = keyboard.read()
+			tx7.write(data)
 
 if __name__ == '__main__':
     main()
