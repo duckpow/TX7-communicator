@@ -62,7 +62,8 @@ def main():
 		elif keyboard.poll():
 			data = keyboard.read_noteMsg()
 			if data != None:
-				tx7.write(data)
+				print(data)
+				tx7.write_noteOn(data[1],data[2])
 
 if __name__ == '__main__':
     main()
