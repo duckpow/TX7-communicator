@@ -108,7 +108,7 @@ class TX7(MidiDevice):
 		self.substate_chan_byte = (self.substate << 4) | self.chan
 		
 		if param_number < 156:
-			self.third_byte, self.fourth_byte = combine_groupParam_bytes(param_number,group_number)
+			self.third_byte, self.fourth_byte = self.combine_groupParam_bytes(param_number,group_number)
 		else:
 			raise Exception("Invalid parameter number")
 

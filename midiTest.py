@@ -53,6 +53,9 @@ def main():
 
 	keyboard = MidiController(int(controller_id))
 
+	#Change the first character to an 'A'
+	#tx7.write_param(145,65)
+
 	#Main loop. Currently no way to terminate!!! besides killing the process
 	while not done:
 		if tx7.poll():
