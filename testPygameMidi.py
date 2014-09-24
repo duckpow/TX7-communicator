@@ -7,6 +7,13 @@ import pygame.midi as Midi
 from yamahaX7 import TX7
 from midiController import MidiController
 
+#Constants
+WIDTH = 1280
+HEIGHT = 720
+SIZE = [WIDTH,HEIGHT]
+FPS = 120 #Needs to be rather quick to not delay midi signals
+
+
 def get_midi_devices():
 	device_count = Midi.get_count()
 	#get info on devices
@@ -32,7 +39,6 @@ def get_midi_devices():
 
 #Main program
 def main():
-	pygame.init()
 	Midi.init()
 
 	done = False
@@ -44,12 +50,15 @@ def main():
 
 	controller_id = raw_input("Choose midi controller: ")
 
+	pygame.init()
+	screen = pygame.display.set_mode(SIZE)
+	pygame.display.set_caption("TX7 test")
+
 	#Create handlers
 	tx7 = TX7(int(input_id),int(output_id))
 	keyboard = MidiController(int(controller_id))
 
 	#Clock control.
-	fps = 60
 	clock = pygame.time.Clock()
 
 	#Main loop
@@ -62,7 +71,7 @@ def main():
 				if event.key == pygame.K_LEFT:
 					done = True
 
-		if tx7.poll():
+		if tx7.poll(): #Data from TX7 takes priority
 			data = tx7.read()
 			if data != 0:
 				print(data)
@@ -72,7 +81,7 @@ def main():
 				print(data)
 				tx7.write_noteOn(data[1],data[2])
 
-		clock.tick(fps)
+		clock.tick(FPS)
 
 	#proper exit
 	pygame.quit()
