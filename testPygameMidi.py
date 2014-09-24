@@ -81,6 +81,8 @@ def main():
 				print(data)
 				tx7.write_noteOn(data[1],data[2])
 
+		text = "FPS: {0:2f}".format(clock.get_fps())
+		pygame.display.set_caption(text)
 		clock.tick(FPS)
 
 	#proper exit
