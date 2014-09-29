@@ -17,9 +17,14 @@ class TX7(MidiDevice):
 		for i in range(6):
 			self.operators.append(TX7Operator())
 
+		self.SUBSTATE_DUMP_REQUEST = 0b0010
+		self.FORMAT_NUMBER = 0
+		self.substate_dump_byte = self.SUBSTATE_DUMP_REQUEST << 4 | self.chan 
+
+
 		#Get current patch on start up
 		#This message requests patch data from TX7 (should work on DX7 as well)
-		self.get_patch_message = [self.SYSEX_START_ID, self.YAMAHA_ID, 32, 0, self.SYSEX_EOX_ID]
+		self.get_patch_message = [self.SYSEX_START_ID, self.YAMAHA_ID, self.substate_dump_byte, self.FORMAT_NUMBER, self.SYSEX_EOX_ID]
 		self.get_patch()
 
 		#Set patch variable to a default		
