@@ -14,7 +14,7 @@ from yamahaX7 import TX7
 from midiController import MidiController
 
 class MainWindow(QtGui.QMainWindow):
-	"""docstring for MainWindow"""
+	"""MainWindow for displaying and changing parameters"""
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		self.initUI()
@@ -29,37 +29,43 @@ class MainWindow(QtGui.QMainWindow):
 		
 
 class Pop_Up(QtGui.QWidget):
-	"""docstring for Pop_Up"""
+	"""Initial UI for setting midi connections"""
 	def __init__(self):
 		super(Pop_Up, self).__init__()
 		self.initUI()
 
 	def initUI(self):
+		#Grid layout is easy
 		self.grid = QtGui.QGridLayout()
 		self.setLayout(self.grid)
 
+		#Midi in block
 		self.midiIn_text = QtGui.QLabel('Choose midi input device: ',self)
 		self.grid.addWidget(self.midiIn_text,0,0)
 		self.midiInDevices = QtGui.QComboBox(self)
 		self.grid.addWidget(self.midiInDevices,0,1)
 		self.midiInDevices.activated[str].connect(self.setMidiIn)
 
+		#Midi out block
 		self.midiOut_text = QtGui.QLabel('Choose midi output device: ',self)
 		self.grid.addWidget(self.midiOut_text,1,0)
 		self.midiOutDevices = QtGui.QComboBox(self)
 		self.grid.addWidget(self.midiOutDevices,1,1)
 		self.midiOutDevices.activated[str].connect(self.setMidiOut)
 
+		#Midi controller block
 		self.midiCntrl_text = QtGui.QLabel('Choose midi controller device: ',self)
 		self.grid.addWidget(self.midiCntrl_text,2,0)
 		self.midiCntrlDevices = QtGui.QComboBox(self)
 		self.grid.addWidget(self.midiCntrlDevices,2,1)
 		self.midiCntrlDevices.activated[str].connect(self.setMidiCntrl)
 
+		#Ok button
 		self.okButton = QtGui.QPushButton("OK",self)
 		self.grid.addWidget(self.okButton,3,1)
 		self.okButton.clicked.connect(self.buttonClicked)
 
+		#TODO: Implement quit button
 
 		self.setGeometry(300,300,250,150)
 		self.setWindowTitle('Midi devices')
@@ -86,7 +92,10 @@ class Pop_Up(QtGui.QWidget):
 			app.launchMainWindow()
 
 class App(Qt.QApplication):
-	"""docstring for App"""
+	"""
+	Main class for the App
+	Handles spawning of windows and event loops (implemented using QTimer)
+	"""
 	def __init__(self, *args):
 		Qt.QApplication.__init__(self, *args)
 		#super(App, self).__init__(*args)
@@ -126,10 +135,12 @@ class App(Qt.QApplication):
 	def startEventTimer(self):
 		self.timer = QtCore.QTimer()
 		self.timer.timeout.connect(self.midiUpdate)
-		self.timer.start(10)
+		self.timer.start(2) #Delay should be low enough that no lag is felt.
 
 	def midiUpdate(self):
 		if self.tx7.poll():
+			#Data should always be read if poll returns true
+			self.data = self.tx7.read()
 			print("Recieved from TX7")
 		elif self.keyboard.poll():
 			self.data = self.keyboard.read()
@@ -141,9 +152,13 @@ class App(Qt.QApplication):
 		
 
 def main(args):
+	'''
+	called when the program starts.
+	Sets app to global and creates the app
+	Handles exit
+	'''
 	global app
 	app = App(args)
-
 	sys.exit(app.exec_())
 
 
