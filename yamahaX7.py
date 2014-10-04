@@ -31,6 +31,7 @@ class TX7(MidiDevice):
 		self.pitch_eg_rate = [0,0,0,0]
 		self.pitch_eg_lvl = [0,0,0,0]
 		self.algorithm = 0
+		self.algorithm_parameter = 134
 		self.feedback = 0
 		self.osc_sync = 0
 		self.LFO = [0,0,0,0,0,0]
@@ -78,6 +79,14 @@ class TX7(MidiDevice):
 						print("Operator %d: " % (6-op))
 						print("Parameters:")
 						print(self.operators[op].getParam())
+
+					self.pitch_eg_rate = msg[126:130]
+					self.pitch_eg_lvl = msg[130:134]
+					self.algorithm = msg[134]
+					self.feedback = msg[135]
+					self.osc_sync = msg[136]
+					self.LFO = msg[137:143]
+
 
 				elif self.msg_len == 4096:
 					print("Received all patches \n No current action")
