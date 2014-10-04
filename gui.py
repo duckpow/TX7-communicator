@@ -23,12 +23,22 @@ class MainWindow(QtGui.QWidget):
 		self.grid = QtGui.QGridLayout()
 		self.setLayout(self.grid)
 
+		#Name of patch
 		self.patch_text = QtGui.QLabel('Patch Name:')
 		self.grid.addWidget(self.patch_text,0,0)
 		self.name_box = QtGui.QLineEdit(self)
 		self.name_box.setMaxLength(10)
 		self.name_box.editingFinished.connect(self.patchNameChanged)
 		self.grid.addWidget(self.name_box,0,1)
+
+		#Algorithm
+		self.algorithm_text = QtGui.QLabel('Algorithm:')
+		self.grid.addWidget(self.algorithm_text,1,0)
+		self.algorithm_slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+		self.algorithm_slider.setMinimum(0)
+		self.algorithm_slider.setMinimum(31)
+		self.algorithm_slider.sliderReleased.connect(self.algorithmChanged)
+		self.grid.addWidget(self.algorithm_slider,1,1)
 
 		self.setGeometry(500,500,550,550)
 		self.setWindowTitle('Main Window')
@@ -57,6 +67,9 @@ class MainWindow(QtGui.QWidget):
 
 	def patchNameChanged(self):
 		app.tx7.change_name(str(self.name_box.text()))
+
+	def algorithmChanged(self):
+		pass
 
 
 class Pop_Up(QtGui.QWidget):
@@ -157,8 +170,8 @@ class App(Qt.QApplication):
 		print("launching...") #debugging
 		self.tx7 = TX7(int(self.midiIn),int(self.midiOut))
 		self.keyboard = MidiController(int(self.midiCntrl))
-		self.startEventTimer()
 		self.mainWindow = MainWindow()
+		self.startEventTimer()
 		self.pop_up.close()
 		
 	def startEventTimer(self):
