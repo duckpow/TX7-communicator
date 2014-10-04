@@ -13,6 +13,36 @@ from PyQt4.QtCore import SIGNAL
 from yamahaX7 import TX7
 from midiController import MidiController
 
+class Envelope(QtGui.QWidget):
+	"""Envelope Widget"""
+	def __init__(self):
+		super(Envelope, self).__init__()
+
+		self.grid = QtGui.QGridLayout()
+		self.setLayout(self.grid)
+
+		self.rates = []
+		self.levels = []
+
+		for i in range(4):
+			self.rates.append(QtGui.QSlider())
+			self.levels.append(QtGui.QSlider())
+
+		i = 0
+		for sld in self.rates:
+			sld.setRange(0,99)
+			self.grid.addWidget(sld,0,i)
+			i += 1
+
+		i=0
+		for sld in self.levels:
+			sld.setRange(0,99)
+			self.grid.addWidget(sld,2,i)
+			i += 1
+
+
+
+
 class MainWindow(QtGui.QWidget):
 	"""MainWindow for displaying and changing parameters"""
 	def __init__(self):
@@ -43,8 +73,12 @@ class MainWindow(QtGui.QWidget):
 		self.algorithm_value.setNum(self.algorithm_slider.value())
 		self.grid.addWidget(self.algorithm_value,1,2)
 
+		#Envelope
+		self.env = Envelope()
+		self.grid.addWidget(self.env,2,0)
+
 		self.setGeometry(500,500,550,550)
-		self.setWindowTitle('Main Window')
+		self.setWindowTitle('TX7 editor')
 		self.show()
 		
 	def drawCircle(self, on=0):
