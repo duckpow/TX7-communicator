@@ -13,32 +13,66 @@ from PyQt4.QtCore import SIGNAL
 from yamahaX7 import TX7
 from midiController import MidiController
 
+class IdentifiableQSlider(QtGui.QSlider):
+	"""Addition of index to QSlider that makes it identifiable from a signal"""
+	def __init__(self, index):
+		super(IdentifiableQSlider, self).__init__()
+		self.index = index
+
+	def getIndex(self):
+		return self.index
+
+
 class Envelope(QtGui.QWidget):
 	"""Envelope Widget"""
-	def __init__(self):
+	def __init__(self, param_start_index):
 		super(Envelope, self).__init__()
+
+		self.firstParam = param_start_index
 
 		self.grid = QtGui.QGridLayout()
 		self.setLayout(self.grid)
 
+		self.points = 4
+
 		self.rates = []
+		self.rateLabels = []
 		self.levels = []
+		self.levelLabels = []
 
-		for i in range(4):
-			self.rates.append(QtGui.QSlider())
-			self.levels.append(QtGui.QSlider())
+		for i in range(self.points):
+			self.rates.append(IdentifiableQSlider(i))
+			self.rateLabels.append(QtGui.QLabel())
 
-		i = 0
-		for sld in self.rates:
-			sld.setRange(0,99)
-			self.grid.addWidget(sld,0,i)
-			i += 1
+			self.levels.append(IdentifiableQSlider(i+self.points))
+			self.levelLabels.append(QtGui.QLabel())
 
-		i=0
-		for sld in self.levels:
-			sld.setRange(0,99)
-			self.grid.addWidget(sld,2,i)
-			i += 1
+		for i in range(self.points):
+			self.rates[i].setRange(0,99)
+			self.grid.addWidget(self.rates[i],0,i)
+			self.grid.addWidget(self.rateLabels[i],1,i)
+			self.rates[i].valueChanged.connect(self.rateLabels[i].setNum)
+			self.rates[i].sliderReleased.connect(self.sendParam)
+
+		for i in range(self.points):
+			self.levels[i].setRange(0,99)
+			self.grid.addWidget(self.levels[i],2,i)
+			self.grid.addWidget(self.levelLabels[i],3,i)
+			self.levels[i].valueChanged.connect(self.levelLabels[i].setNum)
+			self.levels[i].sliderReleased.connect(self.sendParam)
+
+	def updateParam(self, rateArray, lvlArray):
+		for i in range(self.points):
+			self.rates[i].setValue(rateArray[i])
+			self.levels[i].setValue(lvlArray[i])
+
+	def sendParam(self):
+		#self.sld = None
+		self.sld = self.sender()
+		app.tx7.write_param(self.firstParam + self.sld.getIndex(), self.sld.value())
+		print(self.sld.getIndex(),self.sld.value())
+		#app.tx7.write_param(param_number,i)
+
 
 
 
@@ -74,8 +108,8 @@ class MainWindow(QtGui.QWidget):
 		self.grid.addWidget(self.algorithm_value,1,2)
 
 		#Envelope
-		self.env = Envelope()
-		self.grid.addWidget(self.env,2,0)
+		self.pitchEnv = Envelope(126)
+		self.grid.addWidget(self.pitchEnv,2,0)
 
 		self.setGeometry(500,500,550,550)
 		self.setWindowTitle('TX7 editor')
@@ -103,6 +137,7 @@ class MainWindow(QtGui.QWidget):
 		self.name_box.setText(app.tx7.current_patch_name)
 		self.algorithm_slider.setValue(app.tx7.algorithm)
 		self.algorithm_value.setNum(self.algorithm_slider.value())
+		self.pitchEnv.updateParam(app.tx7.pitch_eg_rate,app.tx7.pitch_eg_lvl)
 
 	def patchNameChanged(self):
 		app.tx7.change_name(str(self.name_box.text()))
