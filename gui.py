@@ -26,6 +26,8 @@ class MainWindow(QtGui.QWidget):
 		self.patch_text = QtGui.QLabel('Patch Name:')
 		self.grid.addWidget(self.patch_text,0,0)
 		self.name_box = QtGui.QLineEdit(self)
+		self.name_box.setMaxLength(10)
+		self.name_box.editingFinished.connect(self.patchNameChanged)
 		self.grid.addWidget(self.name_box,0,1)
 
 		self.setGeometry(500,500,550,550)
@@ -52,6 +54,9 @@ class MainWindow(QtGui.QWidget):
 			Goes trough the TX7 object and and updates the data (once finished)
 		'''
 		self.name_box.setText(app.tx7.current_patch_name)
+
+	def patchNameChanged(self):
+		app.tx7.change_name(str(self.name_box.text()))
 
 
 class Pop_Up(QtGui.QWidget):
@@ -175,6 +180,7 @@ class App(Qt.QApplication):
 			self.ledTimer = 30
 			#self.mainWindow.midiReceived()
 			self.data = self.keyboard.read()
+			self.tx7.write(self.data)
 			print("Recieved from keyboard" + str(self.data))
 		#else:
 			#if self.ledTimer:

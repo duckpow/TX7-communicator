@@ -127,18 +127,20 @@ class TX7(MidiDevice):
 			self.SYSEX_EOX_ID])
 
 	def change_name(self, new_name):
-		'''This method takes a string up to 9 characters'''
+		'''This method takes a string up to 10 characters'''
 		if isinstance(new_name,str):
 			self.str_len = len(new_name)
-			if self.str_len < 10:
+			if self.str_len < 11:
 				for i, c in enumerate(new_name):
 					self.write_param(145 + i,ord(c))
 				#Put in blank spaces
-				for i in range(9-self.str_len):
+				for i in range(10-self.str_len):
 					self.write_param(145 + self.str_len+i,ord(" "))
-					print("working?" + str(self.str_len+i))
+					#print("working?" + str(self.str_len+i)) #Debugging
 			else:
 				print("Name to long")
+		else:
+			print("not a string")
 
 
 class TX7Operator(object):
