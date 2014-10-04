@@ -13,20 +13,46 @@ from PyQt4.QtCore import SIGNAL
 from yamahaX7 import TX7
 from midiController import MidiController
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtGui.QWidget):
 	"""MainWindow for displaying and changing parameters"""
 	def __init__(self):
 		super(MainWindow, self).__init__()
 		self.initUI()
 
 	def initUI(self):
-		self.welcomeText = QtGui.QLabel('working', self)
-		#self.addWidget(self.welcomeText)
+		self.grid = QtGui.QGridLayout()
+		self.setLayout(self.grid)
+
+		self.patch_text = QtGui.QLabel('Patch Name:')
+		self.grid.addWidget(self.patch_text,0,0)
+		self.name_box = QtGui.QLineEdit(self)
+		self.grid.addWidget(self.name_box,0,1)
 
 		self.setGeometry(500,500,550,550)
 		self.setWindowTitle('Main Window')
 		self.show()
 		
+	def drawCircle(self, on=0):
+		'''Not currently used '''
+		self.brush = QtGui.QBrush(QtGui.QColor(0,on,0))
+		self.circle = self.scene.addEllipse(10,20,10,10, brush=self.brush)
+
+	def midiReceived(self):
+		#Set color on
+		self.drawCircle(255)
+		#Set color off afer a delay... doesn't work as intended!
+		#self.oneShotTimer = QtCore.QTimer.singleShot(50,self.drawCircle)
+
+	def noMidiReceived(self):
+		self.drawCircle(0)
+
+	def updateFromData(self):
+		'''
+			Update function for the displayed data
+			Goes trough the TX7 object and and updates the data (once finished)
+		'''
+		self.name_box.setText(app.tx7.current_patch_name)
+
 
 class Pop_Up(QtGui.QWidget):
 	"""Initial UI for setting midi connections"""
@@ -102,6 +128,7 @@ class App(Qt.QApplication):
 		self.midiIn = None
 		self.midiOut = None
 		self.midiCntrl = None
+		self.ledTimer = 0
 		self.initApp()
 
 	def initApp(self):
@@ -122,10 +149,7 @@ class App(Qt.QApplication):
 			self.byebye()
 
 	def launchMainWindow(self):
-		print("launching...")
-		print(self.midiIn)
-		print(self.midiOut)
-		print(self.midiCntrl)
+		print("launching...") #debugging
 		self.tx7 = TX7(int(self.midiIn),int(self.midiOut))
 		self.keyboard = MidiController(int(self.midiCntrl))
 		self.startEventTimer()
@@ -138,14 +162,26 @@ class App(Qt.QApplication):
 		self.timer.start(2) #Delay should be low enough that no lag is felt.
 
 	def midiUpdate(self):
+		#The midi update event
+		#TX7 takes prioritie
 		if self.tx7.poll():
+			self.ledTimer = 30
+			#self.mainWindow.midiReceived()
 			#Data should always be read if poll returns true
 			self.data = self.tx7.read()
+			self.mainWindow.updateFromData()
 			print("Recieved from TX7")
 		elif self.keyboard.poll():
+			self.ledTimer = 30
+			#self.mainWindow.midiReceived()
 			self.data = self.keyboard.read()
 			print("Recieved from keyboard" + str(self.data))
-
+		#else:
+			#if self.ledTimer:
+			#	self.ledTimer -= 1
+			#	if not self.var:
+			#		pass
+					#self.mainWindow.noMidiReceived()
 
 	def byebye(self):
 		self.exit(0)
