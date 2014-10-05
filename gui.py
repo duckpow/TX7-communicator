@@ -259,13 +259,16 @@ class MainWindow(QtGui.QWidget):
 		self.feedback = SliderWithNameAndLabel("Feedback",135,minMax=[0,7],vertical=True)
 		self.grid.addWidget(self.feedback,0,3,3,1)
 
+		self.oscSync = ToggleWithName("Osc Sync",136)
+		self.grid.addWidget(self.oscSync,0,4)
+
 		#Pitch Envelope
 		self.pitchEnv = Envelope(126)
-		self.grid.addWidget(self.pitchEnv,2,0)
+		self.grid.addWidget(self.pitchEnv,2,0,2,1)
 
 		#LFO
 		self.lfo = LFO()
-		self.grid.addWidget(self.lfo,2,1)
+		self.grid.addWidget(self.lfo,2,1,2,1)
 
 		self.setGeometry(500,500,550,550)
 		self.setWindowTitle('TX7 editor')
@@ -293,6 +296,7 @@ class MainWindow(QtGui.QWidget):
 		self.name_box.setText(app.tx7.current_patch_name)
 		self.algorithm.updateParam(app.tx7.algorithm)
 		self.feedback.updateParam(app.tx7.feedback)
+		self.oscSync.updateParam(app.tx7.osc_sync)
 		#self.algorithm_slider.setValue(app.tx7.algorithm)
 		#self.algorithm_value.setNum(self.algorithm_slider.value())
 		self.pitchEnv.updateParam(app.tx7.pitch_eg_rate,app.tx7.pitch_eg_lvl)
