@@ -22,9 +22,8 @@ class IdentifiableQSlider(QtGui.QSlider):
 	def getIndex(self):
 		return self.index
 
-
 class Envelope(QtGui.QWidget):
-	"""Envelope Widget"""
+	"""Envelope Widget. Contains several sliders and their labels"""
 	def __init__(self, param_start_index):
 		super(Envelope, self).__init__()
 
@@ -47,17 +46,27 @@ class Envelope(QtGui.QWidget):
 			self.levels.append(IdentifiableQSlider(i+self.points))
 			self.levelLabels.append(QtGui.QLabel())
 
+		self.rateLabel = QtGui.QLabel("Rates")
+		self.grid.addWidget(self.rateLabel,1,0,1,2)
+
+
+
 		for i in range(self.points):
 			self.rates[i].setRange(0,99)
-			self.grid.addWidget(self.rates[i],0,i)
-			self.grid.addWidget(self.rateLabels[i],1,i)
+			self.grid.addWidget(self.rates[i],2,i)
+			self.grid.addWidget(self.rateLabels[i],3,i)
 			self.rates[i].valueChanged.connect(self.rateLabels[i].setNum)
 			self.rates[i].sliderReleased.connect(self.sendParam)
 
+		self.grid.setRowMinimumHeight(4,10)
+
+		self.levelLabel = QtGui.QLabel("Levels")
+		self.grid.addWidget(self.levelLabel,4,0,1,2)
+
 		for i in range(self.points):
 			self.levels[i].setRange(0,99)
-			self.grid.addWidget(self.levels[i],2,i)
-			self.grid.addWidget(self.levelLabels[i],3,i)
+			self.grid.addWidget(self.levels[i],5,i)
+			self.grid.addWidget(self.levelLabels[i],6,i)
 			self.levels[i].valueChanged.connect(self.levelLabels[i].setNum)
 			self.levels[i].sliderReleased.connect(self.sendParam)
 
@@ -73,9 +82,20 @@ class Envelope(QtGui.QWidget):
 		print(self.sld.getIndex(),self.sld.value())
 		#app.tx7.write_param(param_number,i)
 
+class TX7Operator(QtGui.QWidget):
+	"""One TX7Operator as a QWidget"""
+	def __init__(self, index):
+		super(TX7Operator, self).__init__()
+		self.index = index
 
+		self.grid = QtGui.QGridLayout()
+		self.setLayout(self.grid)
 
+	def updateAllParam(self, paramArray):
+		pass
 
+	def sendParam(self):
+		pass
 
 class MainWindow(QtGui.QWidget):
 	"""MainWindow for displaying and changing parameters"""
@@ -107,7 +127,7 @@ class MainWindow(QtGui.QWidget):
 		self.algorithm_value.setNum(self.algorithm_slider.value())
 		self.grid.addWidget(self.algorithm_value,1,2)
 
-		#Envelope
+		#Pitch Envelope
 		self.pitchEnv = Envelope(126)
 		self.grid.addWidget(self.pitchEnv,2,0)
 
@@ -217,7 +237,6 @@ class App(Qt.QApplication):
 	"""
 	def __init__(self, *args):
 		Qt.QApplication.__init__(self, *args)
-		#super(App, self).__init__(*args)
 		self.midiIn = None
 		self.midiOut = None
 		self.midiCntrl = None
@@ -256,10 +275,9 @@ class App(Qt.QApplication):
 
 	def midiUpdate(self):
 		#The midi update event
-		#TX7 takes prioritie
+		#TX7 takes priority
 		if self.tx7.poll():
 			self.ledTimer = 30
-			#self.mainWindow.midiReceived()
 			#Data should always be read if poll returns true
 			self.data = self.tx7.read()
 			self.mainWindow.updateFromData()
@@ -270,17 +288,10 @@ class App(Qt.QApplication):
 			self.data = self.keyboard.read()
 			self.tx7.write(self.data)
 			print("Recieved from keyboard" + str(self.data))
-		#else:
-			#if self.ledTimer:
-			#	self.ledTimer -= 1
-			#	if not self.var:
-			#		pass
-					#self.mainWindow.noMidiReceived()
 
 	def byebye(self):
 		self.exit(0)
 		
-
 def main(args):
 	'''
 	called when the program starts.
