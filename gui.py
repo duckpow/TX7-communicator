@@ -251,16 +251,24 @@ class MainWindow(QtGui.QWidget):
 		self.name_box.editingFinished.connect(self.patchNameChanged)
 		self.grid.addWidget(self.name_box,0,1)
 
+		self.params = {}
+
 		#Algorithm
-		self.algorithm = SliderWithNameAndLabel("Algorithm",134,minMax=[0,31],horizontal=True)
-		self.grid.addWidget(self.algorithm,1,0,1,3)
+		self.params['algorithm'] = SliderWithNameAndLabel("Algorithm",134,minMax=[0,31],horizontal=True)
+		self.grid.addWidget(self.params['algorithm'],1,0,1,3)
 
 		#Misc
-		self.feedback = SliderWithNameAndLabel("Feedback",135,minMax=[0,7],vertical=True)
-		self.grid.addWidget(self.feedback,0,3,3,1)
+		self.params['feedback'] = SliderWithNameAndLabel("Feedback",135,minMax=[0,7],vertical=True)
+		self.grid.addWidget(self.params['feedback'],0,3,3,1)
 
-		self.oscSync = ToggleWithName("Osc Sync",136)
-		self.grid.addWidget(self.oscSync,0,4)
+		self.params['osc_sync'] = ToggleWithName("Osc Sync",136)
+		self.grid.addWidget(self.params['osc_sync'],0,4)
+
+		self.params['mod_sens_pitch'] = SliderWithNameAndLabel("Mod Sens. Pitch",143,minMax=[0,7],vertical=True)
+		self.grid.addWidget(self.params['mod_sens_pitch'],1,4,2,1)
+
+		self.params['transpose'] = SliderWithNameAndLabel("Transpose",144, minMax=[0,48],vertical=True)
+		self.grid.addWidget(self.params['transpose'],0,5,3,1)
 
 		#Pitch Envelope
 		self.pitchEnv = Envelope(126)
@@ -294,9 +302,11 @@ class MainWindow(QtGui.QWidget):
 			Goes trough the TX7 object and and updates the data (once finished)
 		'''
 		self.name_box.setText(app.tx7.current_patch_name)
-		self.algorithm.updateParam(app.tx7.algorithm)
-		self.feedback.updateParam(app.tx7.feedback)
-		self.oscSync.updateParam(app.tx7.osc_sync)
+		for key in self.params:
+			self.params[key].updateParam(app.tx7.param_dict[key])
+		#self.algorithm.updateParam(app.tx7.algorithm)
+		#self.feedback.updateParam(app.tx7.feedback)
+		#self.oscSync.updateParam(app.tx7.osc_sync)
 		#self.algorithm_slider.setValue(app.tx7.algorithm)
 		#self.algorithm_value.setNum(self.algorithm_slider.value())
 		self.pitchEnv.updateParam(app.tx7.pitch_eg_rate,app.tx7.pitch_eg_lvl)
@@ -306,6 +316,7 @@ class MainWindow(QtGui.QWidget):
 		app.tx7.change_name(str(self.name_box.text()))
 
 	def algorithmChanged(self):
+		''' No longer used'''
 		self.algorithm_value.setNum(self.algorithm_slider.value())
 		app.tx7.write_param(app.tx7.algorithm_parameter, self.algorithm_slider.value())
 
