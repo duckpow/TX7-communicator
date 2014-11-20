@@ -80,13 +80,19 @@ class TX7(MidiDevice):
 						self.index = op * 21
 						self.operators[op]['eg_rate'] = msg[0+self.index:4+self.index]
 						self.operators[op]['eg_lvl'] = msg[self.index+4:self.index+8]
-						self.operators[op]['key_lvlScale_array'] = msg[self.index+8:self.index+13]
+						self.operators[op]['BreakPoint'] = msg[self.index+8]
+						self.operators[op]['LeftDepth'] = msg[self.index+9]
+						self.operators[op]['RightDepth'] = msg[self.index+10]
+						self.operators[op]['LeftCurve'] = msg[self.index+11]
+						self.operators[op]['RightCurve'] = msg[self.index+12]
 						self.operators[op]['key_rateScale'] = msg[self.index+13]
 						self.operators[op]['mod_sens_Amp'] = msg[self.index+14]
 						self.operators[op]['key_vel_sens'] = msg[self.index+15]
 						self.operators[op]['output_lvl'] = msg[self.index+16]
 						self.operators[op]['osc_mode'] = msg[self.index+17]
-						self.operators[op]['freq_array'] = msg[self.index+18:self.index+21]
+						self.operators[op]['freq_coarse'] = msg[self.index+18]
+						self.operators[op]['freq_fine'] = msg[self.index+19]
+						self.operators[op]['detune'] = msg[self.index+20]
 						#Operators stored in reverse order...
 						# Print parameters to console
 						print("Operator %d: " % (6-op))
@@ -133,7 +139,7 @@ class TX7(MidiDevice):
 		return (group_number << 2) | self.upper_param_bits, self.lower_param_bits
 
 	def write_param(self,param_number,value, group_number = 0):
-		'''This function has no checking if the value is whitin accepted range og the parameter'''
+		'''This function has no checking if the value is whitin accepted range of the parameter'''
 		#Substate and channel uses the same byte.
 		self.substate = 1
 		self.substate_chan_byte = (self.substate << 4) | self.chan

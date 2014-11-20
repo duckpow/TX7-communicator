@@ -1,10 +1,3 @@
-'''
-GUI for TX7 Editor
-Banders Duckpow 2014
-
-
-'''
-
 import sys
 import pygame.midi as Midi
 from PyQt4 import QtCore, QtGui, Qt
@@ -13,8 +6,15 @@ from PyQt4.QtCore import SIGNAL
 from yamahaX7 import TX7
 from midiController import MidiController
 
+'''
+GUI for TX7/DX7 Editor
+Banders Duckpow 2014
+
+
+'''
+
 class SliderWithNameAndLabel(QtGui.QWidget):
-	"""Creates a slider with name and value label and connects it to the tx7"""
+	"""Creates a slider with name and value label and connects it to the tx7 class"""
 	def __init__(self, name, param_number, minMax=[0,99],**kwargs):
 		super(SliderWithNameAndLabel, self).__init__()
 
@@ -60,7 +60,7 @@ class SliderWithNameAndLabel(QtGui.QWidget):
 
 
 class ToggleWithName(QtGui.QWidget):
-	"""docstring for ToggleWithName"""
+	"""Creates a toggle button with a name label and connects it to the synth class"""
 	def __init__(self, name, param_number):
 		super(ToggleWithName, self).__init__()
 		self.name = name
@@ -81,13 +81,7 @@ class ToggleWithName(QtGui.QWidget):
 		app.tx7.write_param(self.param_number,int(self.tog.isChecked()))
 
 	def updateParam(self, checked):
-		if isinstance(checked,bool):
-			self.toggle.setChecked(checked)
-		elif isinstance(checked,int):
-			self.toggle.setChecked(bool(checked))
-		else:
-			print("Must be bool or int")
-		
+		self.toggle.setChecked(bool(checked))
 
 class IdentifiableQSlider(QtGui.QSlider):
 	"""Addition of index to QSlider that makes it identifiable for a signal"""
@@ -141,8 +135,6 @@ class Envelope(QtGui.QWidget):
 			self.rates[i].valueChanged.connect(self.rateLabels[i].setNum)
 			self.rates[i].sliderReleased.connect(self.sendParam)
 
-		#self.grid.setRowMinimumHeight(4,10)
-
 		self.levelLabel = QtGui.QLabel("Levels")
 		self.grid.addWidget(self.levelLabel,4,0,1,2)
 
@@ -174,8 +166,55 @@ class TX7Operator(QtGui.QWidget):
 		self.grid = QtGui.QGridLayout()
 		self.setLayout(self.grid)
 
-	def updateAllParam(self, paramArray):
-		pass
+		#Create envelope
+		self.env = Envelope(21*self.index)
+		self.grid.addWidget(self.env,0,0,0,1)
+
+		#Level scaling
+		self.parameters = {}
+
+		self.parameters['BreakPoint'] = SliderWithNameAndLabel("Break Point",(self.index + 8),vertical=True)
+		self.grid.addWidget(self.parameters['BreakPoint'],0,2)
+
+		self.parameters['LeftDepth'] = SliderWithNameAndLabel("Left Depth",(self.index + 9),vertical=True)
+		self.grid.addWidget(self.parameters['LeftDepth'],0,3)
+
+		self.parameters['RightDepth'] = SliderWithNameAndLabel("Right Depth",(self.index + 10),vertical=True)
+		self.grid.addWidget(self.parameters['RightDepth'],0,4)
+
+		self.parameters['LeftCurve'] = SliderWithNameAndLabel("Left Curve",(self.index + 11),minMax=[0,3],vertical=True)
+		self.grid.addWidget(self.parameters['LeftCurve'],0,5)
+
+		self.parameters['RightCurve'] = SliderWithNameAndLabel("Right Curve",(self.index + 12),minMax=[0,3],vertical=True)
+		self.grid.addWidget(self.parameters['RightCurve'],0,6)
+
+		#Other
+		self.parameters['key_rateScale'] = SliderWithNameAndLabel("Key Rate scale",(self.index + 13),minMax=[0,7],vertical=True)
+		self.grid.addWidget(self.parameters['key_rateScale'],1,2)
+
+		self.parameters['mod_sens_Amp'] = SliderWithNameAndLabel("Amp Mod Sens",(self.index + 14),minMax=[0,3],vertical=True)
+		self.grid.addWidget(self.parameters['mod_sens_Amp'],1,3)
+
+		self.parameters['key_vel_sens'] = SliderWithNameAndLabel("Velocity Sens",(self.index + 15),minMax=[0,7],vertical=True)
+		self.grid.addWidget(self.parameters['key_vel_sens'],1,4)
+
+		#Pitch
+		self.parameters['freq_coarse'] = SliderWithNameAndLabel("Frequency Coarse",(self.index + 18),minMax=[0,31],vertical=True)
+		self.grid.addWidget(self.parameters['freq_coarse'],1,5)
+
+		self.parameters['freq_fine'] = SliderWithNameAndLabel("Fine",(self.index + 19),vertical=True)
+		self.grid.addWidget(self.parameters['freq_fine'],1,6)
+
+		self.parameters['detune'] = SliderWithNameAndLabel("Detune",(self.index + 20),minMax=[0,14],vertical=True)
+		self.grid.addWidget(self.parameters['detune'],1,7)
+
+
+
+	def updateAllParam(self):
+		self.env.updateParam(app.tx7.operators[self.index]['eg_rate'],app.tx7.operators[self.index]['eg_lvl'])
+		for key, obj in self.parameters.iteritems():
+			obj.updateParam(app.tx7.operators[self.index][key])
+
 
 	def sendParam(self):
 		pass
@@ -281,6 +320,10 @@ class MainWindow(QtGui.QWidget):
 		self.setGeometry(500,500,550,550)
 		self.setWindowTitle('TX7 editor')
 		self.show()
+
+		#Operators
+		self.op = TX7Operator(0)
+		self.grid.addWidget(self.op,4,0,2,5)
 		
 	def drawCircle(self, on=0):
 		'''Not currently used '''
@@ -309,6 +352,7 @@ class MainWindow(QtGui.QWidget):
 		#self.oscSync.updateParam(app.tx7.osc_sync)
 		#self.algorithm_slider.setValue(app.tx7.algorithm)
 		#self.algorithm_value.setNum(self.algorithm_slider.value())
+		self.op.updateAllParam()
 		self.pitchEnv.updateParam(app.tx7.pitch_eg_rate,app.tx7.pitch_eg_lvl)
 		self.lfo.updateParam(app.tx7.LFO)
 
